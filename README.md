@@ -1,2 +1,2 @@
 # XMLProject
-Project focused on Explainability in Knowledge Distillation using Concept Vectors
+Project focused on performing knowledge Distillation on CNN using Concept Vectors.
