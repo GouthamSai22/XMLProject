@@ -93,6 +93,8 @@ class ClassificationTrainer():
         all_losses = {'prediction': pred_loss.item()}
         
         h_loss = self.concept_learning_loss(inputs, all_losses)
+        all_losses['concept'] = h_loss.item()
+        
         loss = pred_loss + h_loss
 
         loss.backward()
@@ -116,13 +118,22 @@ class ClassificationTrainer():
         all_losses = {'prediction': pred_loss.item()}
         
         if with_concepts:
+
             with torch.no_grad():
                 teacher_encoding = teacher_model.conceptizer(inputs)[0]
+                teacher_relevance = teacher_model.parametrizer(inputs)[0]
+
             student_encoding = self.model.conceptizer(inputs)[0]
-            h_loss = F.mse_loss(teacher_encoding,student_encoding) * self.alpha + \
-                self.concept_learning_loss(inputs, all_losses) * (1. - self.alpha)
+            student_relevance = self.model.parametrizer(inputs)[0]
+            
+            concept_kd_loss = F.mse_loss(teacher_encoding,student_encoding)
+            
+            h_loss = (concept_kd_loss) * self.alpha + self.concept_learning_loss(inputs, all_losses) * (1. - self.alpha) + \
+                self.alpha * F.mse_loss(teacher_relevance, student_relevance)
         else:
             h_loss = self.concept_learning_loss(inputs, all_losses)
+        
+        all_losses['concept'] = h_loss.item()
         
         loss = pred_loss + h_loss   
 
@@ -135,10 +146,10 @@ class ClassificationTrainer():
         recons_loss = self.h_reconst_criterion(
             self.model.recons, inputs.detach().requires_grad_(False))
 
-        all_losses['reconstruction'] = recons_loss.item()
+        # all_losses['reconstruction'] = recons_loss.item()
         
         sparsity_loss   = self.model.h_norm_l1.mul(self.h_sparsity)
-        all_losses['h_sparsity'] = sparsity_loss.item()
+        # all_losses['h_sparsity'] = sparsity_loss.item()
         recons_loss += sparsity_loss
         return recons_loss
 

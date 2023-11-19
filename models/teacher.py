@@ -72,10 +72,6 @@ class Parametrizer(nn.Module):
         p = F.relu(self.fc1(p))
         p = self.fc2(p)
         out = F.dropout(p, training=self.training).view(-1, self.concept_num, self.output_dim)
-        if self.positive:
-            out = F.sigmoid(out)
-        else:
-            out = F.tanh(out)
         return out
 
 
@@ -124,6 +120,10 @@ class GSENN(nn.Module):
 
 
         thetas = self.parametrizer(x)
+        if self.parametrizer.positive:
+            thetas = F.sigmoid(thetas)
+        else:
+            thetas = F.tanh(thetas)
 
         if len(thetas.size()) == 2:
             thetas = thetas.unsqueeze(2)

@@ -89,12 +89,12 @@ def main():
     np.random.seed(314)
     torch.manual_seed(314)
     
-    epochs = 100
+    epochs = 200
     batch_size = 128
-    num_concepts = 12
+    num_concepts = 10
     concept_dim = 1
     
-    dataset = input ("Enter 0 for MNIST else CIFAR10 : ")
+    dataset = int(input("Enter 0 for MNIST else CIFAR10 : "))
     
     if dataset == 0:
         num_classes = 10

@@ -69,10 +69,6 @@ class StudentParametrizer(nn.Module):
         p = p.view(-1, 20*(self.output_dim_conv**2))
         p = self.fc1(p)
         out = F.dropout(p, training=self.training).view(-1,self.concept_num,self.output_dim)
-        if self.positive:
-            out = F.sigmoid(out)
-        else:
-            out = F.tanh(out)
         return out
 
 
@@ -121,6 +117,10 @@ class StudentGSENN(nn.Module):
 
 
         thetas = self.parametrizer(x)
+        if self.parametrizer.positive:
+            thetas = F.sigmoid(thetas)
+        else:
+            thetas = F.tanh(thetas)
 
         if len(thetas.size()) == 2:
             thetas = thetas.unsqueeze(2)
